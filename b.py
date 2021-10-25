@@ -1,4 +1,12 @@
 # some credit/reference to https://lptk.github.io/programming/2019/10/15/simple-essence-y-combinator.html
+# that ^ notes that it defines Z combinator, because Y combinator recurses infinitely
+# in python. And maybe it's the Z combinator I've defined here.
+# using more python style syntax with explicit function names and closures.
+
+
+# two examples to use in a mini-talk/blog:
+#   i) recursive lambda - so there is no top level name
+#  ii) serialising code using (dill/pickle) so there is no top level name
 
 from functools import partial
 
