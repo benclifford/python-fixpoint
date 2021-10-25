@@ -7,7 +7,7 @@ def fix(base):
   def base_lift_self(rec_fix):
 
     def looped_base(*args):
-      rec = rec_fix(rec_fix, base)
+      rec = rec_fix(rec_fix)
       return base(rec, *args)
 
     return looped_base
