@@ -2,19 +2,19 @@
 
 from functools import partial
 
-def lift_self(base):
+def fix(base):
 
-  def base_lift_self(rec_lift_self, base):
+  def base_lift_self(rec_fix, base):
 
-    def applied_self(*args):
-      rec = rec_lift_self(rec_lift_self, base)
+    def looped_base(*args):
+      rec = rec_fix(rec_fix, base)
       return base(rec, *args)
 
-    return applied_self
+    return looped_base
 
   return base_lift_self(base_lift_self, base)
 
-@lift_self
+@fix
 def fib(self, n):
 
   if n == 0 or n == 1:
@@ -29,7 +29,7 @@ print("===")
 
 foo = fib
 
-del lift_self
+del fix
 del fib
 
 for n in range(0,9):
