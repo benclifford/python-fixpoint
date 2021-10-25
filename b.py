@@ -37,11 +37,22 @@ print("===")
 
 foo = fib
 
-del fix
+k = fix
+
 del fib
+del fix
 
 for n in range(0,9):
   print(foo(n))
 
 print("===")
+
+# here's an example of using fix to do recursive lambda:
+
+fix = k
+
+fiblambda = fix(lambda self, n: 1 if n == 0 or n == 1 else self(n-1) + self(n-2))
+
+for n in range(0,9):
+  print(fiblambda(n))
 
