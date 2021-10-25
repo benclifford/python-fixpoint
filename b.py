@@ -4,13 +4,13 @@ from functools import partial
 
 def fix(base):
 
-  def base_fix(rec_fix):
+  def base_fix(self):
 
-    def looped_base(*args):
-      rec = rec_fix(rec_fix)
+    def tied_fn(*args):
+      rec = self(self)
       return base(rec, *args)
 
-    return looped_base
+    return tied_fn
 
   return base_fix(base_fix)
 
