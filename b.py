@@ -4,7 +4,7 @@ from functools import partial
 
 def fix(base):
 
-  def base_lift_self(rec_fix):
+  def base_fix(rec_fix):
 
     def looped_base(*args):
       rec = rec_fix(rec_fix)
@@ -12,7 +12,7 @@ def fix(base):
 
     return looped_base
 
-  return base_lift_self(base_lift_self)
+  return base_fix(base_fix)
 
 @fix
 def fib(self, n):
