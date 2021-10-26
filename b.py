@@ -56,3 +56,8 @@ fiblambda = fix(lambda self, n: 1 if n == 0 or n == 1 else self(n-1) + self(n-2)
 for n in range(0,9):
   print(fiblambda(n))
 
+print("===")
+from dill import dump
+with open("fiblambda.dill", "wb") as f:
+  dump(fiblambda, f)
+
