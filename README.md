@@ -4,7 +4,7 @@ Theoreticians like to define simple programming languages, for example the lambd
 
 ```python3
 def f():
-  retun 3
+  return 3
 
 def g():
   return f()+1
