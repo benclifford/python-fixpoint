@@ -106,7 +106,7 @@ In that example, `_` is some code that still needs writing. The base cases are e
 lambda n: 1 if n == 0 or n == 1 else _
 ```
 
-but the recursive case `_`: the lambda needs to call itself. But how? There's no reference anywhere to itself. So it looks like recursive lambda expressions are impossible.
+The recursive case `_` remains to be defined. Here, the lambda needs to call itself. But how? There's no reference anywhere to itself. So it looks like recursive lambda expressions are impossible.
 
 
 The next example is serialising functions using `dill` and then trying to deserialise and execute them elsewhere. This is something that happens a lot in one of my work projects (<a href="http://parsl-project.org/">Parsl</a>) which aims to help you run Python code distributed across many computers.
