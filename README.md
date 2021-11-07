@@ -43,7 +43,7 @@ Why does the above work without `fib` being defined first?
 
 Because Python doesn't need the definition of a function being called until you actually run the containing code and reach the call site. By the time `fib` can actually be executed and reach a (recursive) call to `fib`, it has already been fully defined. (that's why it can be called in the first place).
 
-When function execution reaches a call to `fib` (or any other function) it looks up the name to find the function to execute. This can be made a bit more explicit in the above example by separating out a lookup of `fib` with the invokation of whatever comes out of that lookup:
+When function execution reaches a call to `fib` (or any other function) it looks up the name to find the function to execute. This can be made a bit more explicit in the above example by separating out the lookup of `fib` from the invokation of whatever comes out of that lookup:
 
 ```python3
 def fib(n):
