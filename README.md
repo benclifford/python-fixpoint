@@ -159,10 +159,9 @@ The function is trying to recurse using the name <code>fib</code> still, even th
 The above examples are intended to show the core of the problem: a function needs a reference to itself in order to recurse, and getting that reference from the environment is not always possible.
 
 
-What other ways could a function get a reference to itself? One way that works in some situations is if the function takes its self as an argument, like this: 
+What other ways could a function get a reference to itself? One clunky way is if the function takes itself as an argument, like this: 
 
-</p>
-<pre>
+```python3
 def fib(myself, n):
   if n == 0 or n == 1:
     return 1
@@ -171,24 +170,21 @@ def fib(myself, n):
 
 for n in range(0,7):
   print(fib(fib, n))
-</pre>
+```
 
-<p>That changes the calling convention into something quite ugly - but at least <code>fib</code> doesn't make use of any global binding.
-</p>
+That changes the calling convention into something weird looking, and different from what a normal Python function invocation looks like - but at least `fib` doesn't make use of any global binding.
 
-<p>This helps a bit in the lambda case: a lambda expression can't be passed to itself as an argument without giving it a name somewhere, for example:
+This new calling convention makes the `dill` example work.
 
-</p>
+It also makes the `lambda` almost possible. The expression needs binding to a name somewhere, in order to be passed into itself, but the name doesn't matter - it becomes an entirely local issue, different inside the lambda expression (`myself`) from outside (`f`):
 
-<pre>
+```python3
 for n in range(0,7):
   f = lambda myself, n: 1 if n==0 or n==1 else myself(myself, n-1) + myself(myself, n-2)
   print(f(f, n))
-</pre>
+```
 
-<p>
-but at least the lambda expression doesn't need to know the name. As long as the awkward calling convention is specified, that lambda expression could be passed around, even serialised using `dill`.
-</p>
+## Decorators
 
 <hr/>
 <p>There's a way to abstract away that awkward calling convention separately from the meat of the recursive function using a decorator. A decorator takes a python function definition, and returns a new function that will be bound to the global name instead of the original function definition.
