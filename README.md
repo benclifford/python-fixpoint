@@ -39,25 +39,26 @@ I wondered about the specific additions Python makes to lambda calculus that mak
 
 ## Recursion in Python
 
-<p>Why does that work without <code>fib</code> being defined first?</p>
-<p>Because Python doesn't try to look up the recursive definition of <code>fib</code> until you *run* <code>fib</code> and reach the recursive call. By that time, <code>fib</code> has definitely been defined.</p>
-<p>
-  That can be made a bit more explicit: when <code>fib</code> is called recursively, roughly something like this happens, using a lookup in the global dictionary:
-</p>
+Why does the above work without `fib` being defined first?
 
-<pre>
+Because Python doesn't need the definition of a function being called until you actually run the containing code and reach the call site. By the time `fib` can actually be executed and reach a (recursive) call to `fib`, it has already been fully defined. (that's why it can be called in the first place).
+
+When function execution reaches a call to `fib` (or any other function) it looks up the name to find the function to execute. This can be made a bit more explicit in the above example by separating out a lookup of `fib` with the invokation of whatever comes out of that lookup:
+
+```python3
 def fib(n):
   if n == 0 or n == 1:
     return 1
   else:
     myself = globals()["fib"]
     return myself(n-1) + myself(n-2)
-</pre>
+```
 
-<p>So, when fib runs, it doesn't call *itself* as such, but asks the global environment for the name of a function called <code>fib</code> and calls that. And in most cases, that's the right function and everyone is happy.</p>
+So, when fib runs, it doesn't call *itself* as such, but asks the global environment for the name of a function called <code>fib</code> and calls that. And in most cases, that really is itself, the right function, and everything works.
 
-<p>So how can we break this?
-</p>
+# Breaking recursion
+
+So how can we break this?
 
 <p>There are a few examples (recursive lambda, serialization (eg over the network/to files)) that I'd like to explore but for now, here's a problem that arises with renaming functions:
 </p>
