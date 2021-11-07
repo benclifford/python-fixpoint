@@ -54,44 +54,27 @@ def fib(n):
     return myself(n-1) + myself(n-2)
 ```
 
-So, when fib runs, it doesn't call *itself* as such, but asks the global environment for the name of a function called <code>fib</code> and calls that. And in most cases, that really is itself, the right function, and everything works.
+So, when `fib` runs, it doesn't call *itself* as such, but asks the global environment for the name of a function called <code>fib</code> and calls that. And in most cases, that really is itself, the right function, and everything works.
 
-# Breaking recursion
+## Breaking recursion
 
 So how can we break this?
 
-<p>There are a few examples (recursive lambda, serialization (eg over the network/to files)) that I'd like to explore but for now, here's a problem that arises with renaming functions:
-</p>
+I'll start with a first quite contrived example: rename `fib`:
 
-<p>
-I can give <code>fib</code> another name, like this:
-  <pre>
-  foo = fib
-  
-  for n in range(0,7):
-    print(foo(n))
-  </pre>
-and it seems to run just fine, recursively calling... itself?
-  <pre>
-1
-1
-2
-3
-5
-8
-13  
-  </pre>
+```python3
+foo = fib
 
-<p>If it really is recursively calling itself, we can get rid of the top level <code>fib</code> definition: after all, it's called <code>foo</code> now, right?
-</p>
+del fib
 
-<pre>
-  del fib
-  for n in range(0,7):
-    print(foo(n))
-</pre>
+for n in range(0,7):
+  print(foo(n))
 
-<pre>
+```
+
+This will break after a few steps:
+
+```
 1
 1
 Traceback (most recent call last):
@@ -100,13 +83,13 @@ Traceback (most recent call last):
   File "a.py", line 7, in fib
     return fib(n-1) + fib(n-2)
 NameError: global name 'fib' is not defined
-</pre>
+```
 
-<p>boom! this code prints the first two values correctly (because no recursion is needed) but as soon as the code tries to recurse, it explodes: even though the function is called <code>foo</code> now, it is still trying to call <code>fib</code> to recurse, rather than calling itself.</p>
+Boom! This code prints the first two values correctly (because no recursion is needed) but as soon as the code tries to recurse, it explodes: even though the function is called `foo` now, it is still trying to call `fib` to recurse - it isn't calling itself, remember.</p>
 
-<p>So recursive code, at least in this style, is reliant on a global dictionary entry that aligns with the function definition: a recursive function isn't a free-standing object, in the way that a non-recursive function is.</p>
+Recursive code, at least in this style, is reliant on a global dictionary entry that aligns with the function definition: a recursive function isn't a free-standing object, in the way that a non-recursive function is.
 
-<hr/>
+## Less Contrived Examples
 
 <p>
   That's a bit of a contrived situation, so I'll show two more practical cases: writing recursive functions using <code>lambda</code> expressions, and serialising functions using <code>dill</code> (for example to send over a network for execution).
