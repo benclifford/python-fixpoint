@@ -87,40 +87,33 @@ NameError: global name 'fib' is not defined
 
 Boom! This code prints the first two values correctly (because no recursion is needed) but as soon as the code tries to recurse, it explodes: even though the function is called `foo` now, it is still trying to call `fib` to recurse - it isn't calling itself, remember.</p>
 
-Recursive code, at least in this style, is reliant on a global dictionary entry that aligns with the function definition: a recursive function isn't a free-standing object, in the way that a non-recursive function is.
+Recursive code, at least in this style, is reliant on an in-scope dictionary entry that aligns with the function definition: a recursive function isn't a free-standing object, in the way that a non-recursive function is.
 
 ## Less Contrived Examples
 
-<p>
-  That's a bit of a contrived situation, so I'll show two more practical cases: writing recursive functions using <code>lambda</code> expressions, and serialising functions using <code>dill</code> (for example to send over a network for execution).
-</p>
+Here are a couple of more practical cases where this dictionary tie causes problems: first writing recursive functions usign `lambda` expressions, and second serialising functions using `dill` (for example to send over a network for execution).
 
-<p>
-In the first example, I'm going to try defining fibonnacci as a lambda expression. I want to be able to write some code like this:
-</p>
-  
-<pre>
+In the first example, I'm going to try defining fibonnacci as a lambda expression. I want to write some code like this:
+
+```python3
   for n in range(0,7):
-    print( (lambda n: .......) (n) )
-</pre>
+    print( (lambda n: _) (n) )
+```
 
-<p>In that example, <code>.......</code> is some code that still needs writing. The base cases are easy:
-<pre>
-lambda n: 1 if n == 0 or n == 1 else .......
-</pre>
-but now the recursive case remains: the lambda needs to call itself. But how? There's no reference anywhere to itself to use. So it looks like recursive lambda expressions are impossible.
-</p>
+In that example, `_` is some code that still needs writing. The base cases are easy:
 
-<p>
-The next example is serialising functions using `dill` and then trying to deserialise and execute them elsewhere. This is something that happens a lot in one of my projects (<a href="http://parsl-project.org/">Parsl</a>) which aims to help you run Python code distributed across many computers.
-</p>
-<p>
-  The first bit of code defines recursive <code>fib</code> as before (which we know works in a normal environment) and serialises it out to a file. The second bit of code loads that serialised function from a file, and tries to run it in a loop: so the very first example is split into two sections, separated by a serialisation/deserialisation. You could perhaps imagine that it is being deserialised on a different machine, in the Parsl case.
-</p>
+```python3
+lambda n: 1 if n == 0 or n == 1 else _
+```
 
-<p>Part 1:</p>
+but the recursive case `_`: the lambda needs to call itself. But how? There's no reference anywhere to itself. So it looks like recursive lambda expressions are impossible.
 
-<pre>
+
+The next example is serialising functions using `dill` and then trying to deserialise and execute them elsewhere. This is something that happens a lot in one of my work projects (<a href="http://parsl-project.org/">Parsl</a>) which aims to help you run Python code distributed across many computers.
+
+The first bit of code defines recursive <code>fib</code> as before and serialises it out to a file:
+
+```python3
 def fib(n):
   if n == 0 or n == 1:
     return 1
@@ -131,20 +124,24 @@ from dill import dump
 
 with open("fib.dill", "wb") as f:
   dump(fib, f)
-</pre>
+```
 
-<p>Part 2:</p>
+The second bit of code loads that serialised function from a file, and tries to run it in a loop:
 
-<pre>
+```python3
 with open("fib.dill", "rb") as f:
   user_supplied_function = load(f)
 
 for n in range(0,7):
   print(user_supplied_function(n))
-</pre>
+```
 
-<p>Running this, the first two (non-recursive) results work fine, but the recursive case breaks:</p>
-<pre>
+It would be nice if this behaves like the first example, but with definition and execution separated by a serialisation/deserialisation. (In the Parsl case, more interesting things would happen to the serialised form first: it could be moved and copied to many different machines, for example)
+
+
+Like the `del` example above, this works for the first two non-recursive results, but fails as soon as recursion happens:
+
+```python3
 1
 1
 Traceback (most recent call last):
@@ -153,29 +150,17 @@ Traceback (most recent call last):
   File "d1.py", line 5, in fib
     return fib(n-1) + fib(n-2)
 NameError: name 'fib' is not defined
-</pre>
-<p>The function is trying to recurse using the global name <code>fib</code> still, even though that's not a name on the execution side - on the execution side, it's called <code>user_supplied_function</code>.
-</p>
-<p>
-  With an ugly hack to make the global name <code>fib</code> available, the code does work, so you hopefully see that it's just the name that is missing, not anything worse:
-</p>
+```
 
-<pre>
-with open("fib.dill", "rb") as f:
-  user_supplied_function = load(f)
+The function is trying to recurse using the name <code>fib</code> still, even though that name isn't defined anywhere on the execution side - on the execution side, it happens to be called `user_supplied_function`.
 
-fib = user_supplied_function
+## Fixing this
 
-for n in range(0,7):
-  print(user_supplied_function(n))
-</pre>
-
-<hr/>
+The above examples are intended to show the core of the problem: a function needs a reference to itself in order to recurse, and getting that reference from the environment is not always possible.
 
 
-<p>So core of the problem is that a function needs a reference to itself in order to recurse, and getting that reference from the global environment is not always possible, as the above examples have shown.</p>
+What other ways could a function get a reference to itself? One way that works in some situations is if the function takes its self as an argument, like this: 
 
-<p>What other ways could a function get a reference to itself? One way that works in some situations is if the function takes its self as an argument, like this: 
 </p>
 <pre>
 def fib(myself, n):
