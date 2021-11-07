@@ -237,6 +237,10 @@ def fix(base):
 
 It turns out to be a lot of wiring of names and values around without much else seemingly happening. Perhaps that should be unsurprising: The core of the recursion problem above is about getting the function definition wired through to the right place.
 
+The supplied base function, eg `fib` in the concrete example, is replaced by `tied_fn` which calls the base function with an extra argument on the front, to fit the special calling convention.
+
+That extra argument on the front is almost but not quite the function itself: instead it's the result of performing this knot tying one more time, so that every time it is invoked, it always adds on the appropriate extra parameter.
+
 Using this, it's possible to even combine both of the examples above and make a recursive `lambda` fibonacci that can be serialised between processes.
 
 The definition:  
@@ -260,5 +264,10 @@ for n in range(0,7):
 
 <hr>
 
-<p>Another place in Python where some of this distinction between name and content in recursion comes into play is with recursive module import: that works with <code>import</code> but not with <code>from</code> - similar knot tying has to happen with module import and it happens to work one way and not the other.</p>
+So in summary: regular Python recursion only works if your functions have well defined names. This is how things work in most programming, but I gave a couple of examples (`lambda` and `dill`) where that isn't true. Then some programming language theory magic (expressed as a decorator) lets you make recursive functions that don't need to know their own name.
+
+Another place in Python where some of this distinction between name and content in recursion comes into play is with recursive module import: you can make recursive module imports using `import x` and later referencing `x.y` but you can't using `from x import y`. The different between these imports is that in the first example, `y` isn't looked up until it is used, much later on when the recursive import is finished. Using `from` syntax, `x` needs to be completely imported before the statement can continue, which breaks recursion.
+
+That `fix` decorator is something like the <a href="https://en.wikipedia.org/wiki/Fixed-point_combinator#Strict_fixed-point_combinator">Z combinator</a> but I've avoided mention of this until the end, because I wanted all my examples to be grounded in Python code.
+
 
