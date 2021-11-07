@@ -186,40 +186,42 @@ for n in range(0,7):
 
 ## Decorators
 
-<hr/>
-<p>There's a way to abstract away that awkward calling convention separately from the meat of the recursive function using a decorator. A decorator takes a python function definition, and returns a new function that will be bound to the global name instead of the original function definition.
-</p>
-<p>For example:
-</p>
+There's a way to abstract away that calling convention using decorators.
 
-<pre>
+Decorators are Python syntax that lets you pass a function definition through some of your own code before it is bound to the global name of the function.
+
+For example, this:
+
+```python3
 @fix
-def fib(self, n):
+def fib(myself, n):
   if n == 0 or n == 1:
     return 1
   else:
-    return self(n-1) + self(n-2)
-</pre>
+    return myself(n-1) + myself(n-2)
+```
 
-<p>This code will define a function with two parameters, and then pass it at a parameter to <code>fix</code>, and whatever <code>fix</code> returns is what will be bound to the global name <code>fib</code>. This is similar, but not quite the same, as writing this without using <code>@decorator</code> syntax:
- 
-</p>
+which means something similar to (but not quite) this non-decorator code:
 
-<pre>
-def _fib(self, n):
-
+```python3
+def _fib(myself, n):
   if n == 0 or n == 1:
     return 1
   else:
-    return self(n-1) + self(n-2)
+    return myself(n-1) + myself(n-2)
 
 fib = fix(_fib)
-</pre>
+```
 
-<hr>
-<p>So how should <code>fix</code> be defined?</p>
+`fix` is a function which itself takes a function, and returns a replacement for that function.
 
-<pre>
+I'm going to make `fix` wire stuff up so that you can invoke `fib` *without* that special calling convention, like at the start of this document, but make it so `fib` receives a reference to itself in the `myself` parameter as if we *are* using that special calling convention.
+
+## Defining `fix`
+
+Here is a definition of `fix` that works:
+
+```python3
 def fix(base):
 
   def base_fix(self):
@@ -231,31 +233,32 @@ def fix(base):
     return tied_fn
 
   return base_fix(base_fix)
-</pre>
+```
 
-<p>It turns out to be a lot of wiring of names around without much else seemingly happening. Perhaps that should be unsurprising: The core of the recursion problem above is about getting the right name in the right place to recurse.</p>
+It turns out to be a lot of wiring of names and values around without much else seemingly happening. Perhaps that should be unsurprising: The core of the recursion problem above is about getting the function definition wired through to the right place.
 
-<p>Using this, it's possible to make a recursive fibonacci that can be serialised between processes. And a recursive fibonacci using only <code>lambda</code> and <code>fix</code>, and even a recursive fibonacci defined using lambda that can be serialised between processes:</p>
+Using this, it's possible to even combine both of the examples above and make a recursive `lambda` fibonacci that can be serialised between processes.
+
+The definition:  
   
-  
-<pre>
+```python3
 fiblambda = fix(lambda self, n: 1 if n == 0 or n == 1 else self(n-1) + self(n-2))
 from dill import dump
 with open("fiblambda.dill", "wb") as f:
   dump(fiblambda, f)
-</pre>
+```
 
-<p>... fed into ...</p>
+... and the execution:
 
-<pre>
+```python3
 with open("fiblambda.dill", "rb") as f:
   user_supplied_function = load(f)
 
 for n in range(0,7):
   print(user_supplied_function(n))
-</pre>
+```
 
 <hr>
-<p>So 
+
 <p>Another place in Python where some of this distinction between name and content in recursion comes into play is with recursive module import: that works with <code>import</code> but not with <code>from</code> - similar knot tying has to happen with module import and it happens to work one way and not the other.</p>
 
