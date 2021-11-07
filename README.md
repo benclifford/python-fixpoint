@@ -1,10 +1,8 @@
-# Introduction
+# Breaking recursion in Python and `fix`-ing it back up again
 
-There's a theoretical programming language - the simply typed lambda calculus - which is studied a bunch in computer science.
+Theoreticians like to define simple programming languages, for example the lambda calculus, and in some parts of that theoretical world, you can't call a function if you haven't defined it yet. If I want to call `f` in another function `g`, I have to first define `f()` before defining `g()`:
 
-In that theoretical world, you can't call a function if you haven't defined it yet. If I want to call `f` in another function `g`, I have to first define `f()` before defining `g()`:
-
-```
+```python3
 def f():
   retun 3
 
@@ -16,7 +14,7 @@ This breaks recursion: you can't call yourself, because you haven't finished def
 
 Luckily in most languages, that isn't a problem - theory be damned, this Python code runs just fine:
 
-```
+```python3
 def fib(n):
   if n == 0 or n == 1:
     return 1
@@ -36,6 +34,10 @@ for n in range(0,7):
 8
 13
 ```
+
+I wondered about the specific additions Python makes to lambda calculus that make the above recursion work, and this repo is the result of those musings.
+
+## Recursion in Python
 
 <p>Why does that work without <code>fib</code> being defined first?</p>
 <p>Because Python doesn't try to look up the recursive definition of <code>fib</code> until you *run* <code>fib</code> and reach the recursive call. By that time, <code>fib</code> has definitely been defined.</p>
