@@ -1,8 +1,22 @@
+# Introduction
 
-<p>theres a view of maths/cs that says you can't define a thing using things you haven't defined yet - if I want to use some function f() in another function g(), I need to define f() first.</p>
-<p>This breaks recursion: you can't call yourself, because you haven't finished defining yourself yet.</p>
-<p>Luckily in most languages, that isn't a problem - theory be damned, this Python code runs just fine:</p>
-  <pre>
+There's a theoretical programming language - the simply typed lambda calculus - which is studied a bunch in computer science.
+
+In that theoretical world, you can't call a function if you haven't defined it yet. If I want to call `f` in another function `g`, I have to first define `f()` before defining `g()`:
+
+```
+def f():
+  retun 3
+
+def g():
+  return f()+1
+```
+
+This breaks recursion: you can't call yourself, because you haven't finished defining yourself yet.
+
+Luckily in most languages, that isn't a problem - theory be damned, this Python code runs just fine:
+
+```
 def fib(n):
   if n == 0 or n == 1:
     return 1
@@ -11,16 +25,17 @@ def fib(n):
 
 for n in range(0,7):
   print(fib(n))    
-  </pre>
-  <pre>
+```
+
+```
 1
 1
 2
 3
 5
 8
-13  
-  </pre>
+13
+```
 
 <p>Why does that work without <code>fib</code> being defined first?</p>
 <p>Because Python doesn't try to look up the recursive definition of <code>fib</code> until you *run* <code>fib</code> and reach the recursive call. By that time, <code>fib</code> has definitely been defined.</p>
